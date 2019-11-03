@@ -75,6 +75,21 @@ void atualizaCam(){
     }
 }
 
+/*void criaObjeto(GLMmodel* objeto, coordenadas coordenada){
+    if(!objeto)
+        exit(0);
+    glmScale(objeto, 200.0);
+    glmUnitize(objeto);
+    glmFacetNormals(objeto);
+    glmVertexNormals(objeto, 90.0, 1);
+
+    glPushMatrix();
+    glTranslatef(coordenada.x, coordenada.y, coordenada.z);
+    glScalef(1,1,1);
+    glmDraw(objeto, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+    glPopMatrix();
+
+}*/
 
 void desenhaPlano(){
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -160,6 +175,7 @@ void atualiza(int periodo){
 
 void inicializa(){
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -178,7 +194,7 @@ void inicializa(){
     chao.ambiente[3] = chao.difusa[3] = chao.especular[3] = chao.emissiva[3] = 1;
     chao.brilho[0] = 0;
 
-    texturaPiso = SOIL_load_OGL_texture("images/chao.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+    texturaPiso = SOIL_load_OGL_texture("chao.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
     if (!texturaPiso)
         printf("Erro do SOIL: '%s'\n", SOIL_last_result());
     configLuz();

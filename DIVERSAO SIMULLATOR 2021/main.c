@@ -29,14 +29,14 @@ typedef struct{
     GLfloat brilho[1];
 }LUZ, COR, MATERIAL;
 
-int vira = 0, camType = 1, cam2Side = 1, luz = 1, dia = 0; //flags "booleanas"
+int vira = 0, camType = 1, luz = 1, dia = 0; //flags "booleanas"
 
 
-POSICAO cam, focoCamera;
+POSICAO cam, focoCamera, camAux;
 
 LUZ sol, lampada;
 
-MATERIAL plasticoDoZeppelin, madeira, chao, cabine, dome;
+MATERIAL chao;
 
 //Mix_Music *jazzgostosinho;
 
@@ -67,11 +67,26 @@ void setMaterial(MATERIAL m){
 
 void atualizaCam(){
     if(camType == 1){
-        focoCamera.x = cam.x;
+        cam.x = camAux.x + 15*sin(anguloTranslacao);
+        cam.z = camAux.z + 15*cos(anguloTranslacao);
+        focoCamera.x = camAux.x;
+        focoCamera.y = camAux.y;
+        focoCamera.z = camAux.z;
+        printf("C A M Z %f\n",cam.z );
+        /*focoCamera.x = cam.x;
         focoCamera.y = cam.y;
-        //cam.x = cam.x + 15*sin(anguloTranslacao);
-        //cam.z = cam.z + 15*cos(anguloTranslacao);
         focoCamera.z = cam.z;
+        cam.z = cam.z + 15*cos(anguloTranslacao);
+        cam.x = cam.x + 15*sin(anguloTranslacao);*/
+        printf("anguloTranslacao: %f\n",anguloTranslacao );
+        printf("cam z:%f\n",cam.z );
+        printf("foco z:%f\n",focoCamera.z );
+        printf("cam x:%f\n",cam.x );
+        printf("foco x:%f\n",focoCamera.x );
+        printf("cam y:%f\n",cam.y );
+        printf("foco y:%f\n",focoCamera.y );
+        
+
     }
 }
 
@@ -96,7 +111,42 @@ void desenhaPlano(){
     glEnable(GL_TEXTURE_2D);
     setMaterial(chao);
     glBindTexture(GL_TEXTURE_2D, texturaPiso);
- 	    glBegin(GL_TRIANGLE_FAN);
+ 	
+ 	// Desenha um cubo no qual a textura é aplicada
+	glBegin ( GL_QUADS );
+		// Face frontal
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1000, -1.0f,  1000);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1000, -1.0f,  1000);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1000,  1.0f,  1000);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1000,  1.0f,  1000);
+		// Face posterior
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1000, -1.0f, -1000);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1000,  1.0f, -1000);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1000,  1.0f, -1000);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1000, -1.0f, -1000);
+		// Face superior
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1000,  1.0f, -1000);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1000,  1.0f,  1000);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1000,  1.0f,  1000);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1000,  1.0f, -1000);
+		// Face inferior
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1000, -1.0f, -1000);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1000, -1.0f, -1000);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1000, -1.0f,  1000);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1000, -1.0f,  1000);
+		// Face lateral direita
+		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1000, -1.0f, -1000);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1000,  1.0f, -1000);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1000,  1.0f,  1000);
+		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1000, -1.0f,  1000);
+		// Face lateral esquerda
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1000, -1.0f, -1000);
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1000, -1.0f,  1000);
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1000,  1.0f,  1000);
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1000,  1.0f, -1000);
+	glEnd();
+
+ 	   /* glBegin(GL_TRIANGLE_FAN);
             glColor3f(0.6, 0.6, 0.6);
             glTexCoord2f(0, 0);glVertex3f(0,0,0);
             glTexCoord2f(0, 1); glVertex3f(-10000, 0, -10000);
@@ -116,7 +166,7 @@ void desenhaPlano(){
             glTexCoord2f(1, 0);glVertex3f(0,0,-10000);
             glTexCoord2f(0, 1);glVertex3f(-5000,0,-10000);
             glTexCoord2f(1, 1); glVertex3f(-10000, 0, -10000);
-        glEnd();
+        glEnd();*/
     glDisable(GL_TEXTURE_2D);
 }
 
@@ -127,7 +177,7 @@ void desenhaCena(){
         gluLookAt(cam.x, cam.y, cam.z, focoCamera.x, focoCamera.y, focoCamera.z, 0, 1, 0);
         glLightfv(GL_LIGHT0, GL_POSITION, sol.posicao);
 
-        if(luz) glEnable(GL_LIGHTING);
+        //if(luz) glEnable(GL_LIGHTING);
         
         desenhaPlano();
 
@@ -173,6 +223,34 @@ void atualiza(int periodo){
 	glutPostRedisplay();
 }
 
+void teclado(unsigned char key, int x, int y){
+    switch(key){
+        case 27: // ESC
+            exit(0);
+            break;
+        case 'a':
+            anguloRotacao += 2;
+            anguloTranslacao += M_PI/90;
+            atualizaCam();
+            break;
+        case 'd':
+            anguloTranslacao -= M_PI/90;
+            anguloRotacao -= 2;
+            atualizaCam();
+            break;
+       case 'w':
+            camAux.x -= 4*sin(anguloTranslacao);
+            camAux.z -= 4*cos(anguloTranslacao);
+            atualizaCam();
+            break;
+        case 's':
+            camAux.x += 2*sin(anguloTranslacao);
+            camAux.z += 2*cos(anguloTranslacao);
+            atualizaCam();
+            break;
+    }
+}
+
 void inicializa(){
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -180,21 +258,26 @@ void inicializa(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     cam.x = 0;
-    cam.y = 108;
+    cam.y = 108; //altura camera
     cam.z = 10;
+    camAux.x = cam.x;
+    camAux.y = 100;
+    camAux.z = 0;
 
     //CHAO
-    for(i = 0; i < 3; i++) chao.ambiente[i] = 0;
+    for(i = 0; i < 3; i++){
+    	chao.ambiente[i] = 0;
+    	chao.difusa[i] = .5;
+    	chao.especular[i] = .0;
+    	chao.emissiva[i] = .0;	
+    } 
     chao.ambiente[1] = .2;
-    for(i = 0; i < 3; i++) chao.difusa[i] = .5;
     chao.difusa[1] = .6;
-    for(i = 0; i < 3; i++) chao.especular[i] = .0;
     chao.especular[1] = .1;
-    for(i = 0; i < 3; i++) chao.emissiva[i] = .0;
     chao.ambiente[3] = chao.difusa[3] = chao.especular[3] = chao.emissiva[3] = 1;
     chao.brilho[0] = 0;
 
-    texturaPiso = SOIL_load_OGL_texture("chao.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+    texturaPiso = SOIL_load_OGL_texture("images/chao.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
     if (!texturaPiso)
         printf("Erro do SOIL: '%s'\n", SOIL_last_result());
     configLuz();
@@ -219,7 +302,7 @@ int main(int argc, char *argv[]){
     //glutSpecialFunc(SpecialInput);
     glutIdleFunc(desenhaCena);
     glutTimerFunc(25, atualiza, 0);
-    /*glutKeyboardFunc(teclado);*/
+    glutKeyboardFunc(teclado);
     glewInit();
     inicializa();
     glutMainLoop();

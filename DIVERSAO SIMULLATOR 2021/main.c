@@ -7,13 +7,13 @@
 #define N_ARVORES 200
 #define N_NUVENS 100
 
-GLMmodel *m_arvore = NULL, *m_casa = NULL, *m_poste = NULL, *m_nuvens = NULL;
+GLMmodel *poste_M = NULL;
 
 int i = 0, j = 0;
 
 typedef struct{
     GLdouble x, y, z;
-}POSICAO, NUVEM;
+}PONTO;
 
 typedef struct{
 	double scale[3];
@@ -32,7 +32,7 @@ typedef struct{
 int vira = 0, camType = 1, luz = 1, dia = 0; //flags "booleanas"
 
 
-POSICAO cam, focoCamera, camAux;
+PONTO cam, focoCamera, camAux;
 
 LUZ sol, lampada;
 
@@ -72,25 +72,11 @@ void atualizaCam(){
         focoCamera.x = camAux.x;
         focoCamera.y = camAux.y;
         focoCamera.z = camAux.z;
-        printf("C A M Z %f\n",cam.z );
-        /*focoCamera.x = cam.x;
-        focoCamera.y = cam.y;
-        focoCamera.z = cam.z;
-        cam.z = cam.z + 15*cos(anguloTranslacao);
-        cam.x = cam.x + 15*sin(anguloTranslacao);*/
-        printf("anguloTranslacao: %f\n",anguloTranslacao );
-        printf("cam z:%f\n",cam.z );
-        printf("foco z:%f\n",focoCamera.z );
-        printf("cam x:%f\n",cam.x );
-        printf("foco x:%f\n",focoCamera.x );
-        printf("cam y:%f\n",cam.y );
-        printf("foco y:%f\n",focoCamera.y );
-        
 
     }
 }
 
-/*void criaObjeto(GLMmodel* objeto, coordenadas coordenada){
+void criaObjeto(GLMmodel* objeto, PONTO coordenada){
     if(!objeto)
         exit(0);
     glmScale(objeto, 200.0);
@@ -100,11 +86,11 @@ void atualizaCam(){
 
     glPushMatrix();
     glTranslatef(coordenada.x, coordenada.y, coordenada.z);
-    glScalef(1,1,1);
+    glScalef(10,10,10);
     glmDraw(objeto, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
     glPopMatrix();
 
-}*/
+}
 
 void desenhaPlano(){
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -145,28 +131,6 @@ void desenhaPlano(){
 		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1000,  1.0f,  1000);
 		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1000,  1.0f, -1000);
 	glEnd();
-
- 	   /* glBegin(GL_TRIANGLE_FAN);
-            glColor3f(0.6, 0.6, 0.6);
-            glTexCoord2f(0, 0);glVertex3f(0,0,0);
-            glTexCoord2f(0, 1); glVertex3f(-10000, 0, -10000);
-            glTexCoord2f(1, 1);glVertex3f(-10000,0,-5000);
-            glTexCoord2f(1, 0);glVertex3f(-10000,0,0);
-            glTexCoord2f(0, 1);glVertex3f(-10000,0,5000);
-            glTexCoord2f(1, 1); glVertex3f(-10000, 0, 10000);
-            glTexCoord2f(1, 0);glVertex3f(-5000,0,10000);
-            glTexCoord2f(0, 1);glVertex3f(0,0,10000);
-            glTexCoord2f(1, 1);glVertex3f(5000,0,10000);
-            glTexCoord2f(1, 0); glVertex3f( 10000, 0,  10000);
-            glTexCoord2f(0, 1);glVertex3f(10000,0,5000);
-            glTexCoord2f(1, 1);glVertex3f(10000,0,0);
-            glTexCoord2f(1, 0);glVertex3f(10000,0,-5000);
-            glTexCoord2f(0, 1); glVertex3f( 10000, 0, -10000);
-            glTexCoord2f(1, 1);glVertex3f(5000,0,-10000);
-            glTexCoord2f(1, 0);glVertex3f(0,0,-10000);
-            glTexCoord2f(0, 1);glVertex3f(-5000,0,-10000);
-            glTexCoord2f(1, 1); glVertex3f(-10000, 0, -10000);
-        glEnd();*/
     glDisable(GL_TEXTURE_2D);
 }
 
@@ -218,7 +182,6 @@ void configLuz(){
 
 void atualiza(int periodo){
     configLuz();
-    //setupMaterial();
 	glutTimerFunc(25, atualiza, 0);	
 	glutPostRedisplay();
 }
@@ -276,6 +239,18 @@ void inicializa(){
     chao.especular[1] = .1;
     chao.ambiente[3] = chao.difusa[3] = chao.especular[3] = chao.emissiva[3] = 1;
     chao.brilho[0] = 0;
+
+    poste_M = glmReadOBJ("obejotas/arvorezinha/lowpolytree.obj");
+    if (!poste_M) 
+        exit(0);
+    PONTO ptPoste;
+    printf("camera x: %f\n",cam.x);
+    printf("camera y: %f\n",cam.y);
+    printf("camera z: %f\n",cam.z);
+    ptPoste.x = 10;
+    ptPoste.y = 100;
+    ptPoste.z = 8;
+    criaObjeto(poste_M, ptPoste);
 
     texturaPiso = SOIL_load_OGL_texture("images/chao.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
     if (!texturaPiso)

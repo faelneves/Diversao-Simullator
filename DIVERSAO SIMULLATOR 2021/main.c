@@ -7,7 +7,7 @@
 #define N_ARVORES 200
 #define N_NUVENS 100
 
-GLMmodel *poste_M = NULL;
+GLMmodel *poste_M = NULL, *xicara = NULL, *elevador = NULL, *carrossel = NULL;
 
 int i = 0, j = 0;
 
@@ -32,11 +32,11 @@ typedef struct{
 int vira = 0, camType = 1, luz = 1, dia = 0; //flags "booleanas"
 
 
-PONTO cam, focoCamera, camAux;
+PONTO cam, focoCamera, camAux, escala, trasla;
 
 LUZ sol, lampada;
 
-MATERIAL chao;
+MATERIAL chao, madeira;
 
 //Mix_Music *jazzgostosinho;
 
@@ -76,21 +76,16 @@ void atualizaCam(){
     }
 }
 
-void criaObjeto(GLMmodel* objeto, PONTO coordenada){
+void criaObjeto(GLMmodel* objeto, PONTO ptTransled,PONTO ptScaled){
+    setMaterial(madeira);
+    glTranslated(ptTransled.x, ptTransled.y, ptTransled.y);
+    glScaled(ptScaled.x, ptScaled.y, ptScaled.z);
     if(!objeto)
         exit(0);
-    glmScale(objeto, 200.0);
-    glmUnitize(objeto);
-    glmFacetNormals(objeto);
-    glmVertexNormals(objeto, 90.0, 1);
-
-    glPushMatrix();
-    glTranslatef(coordenada.x, coordenada.y, coordenada.z);
-    glScalef(10,10,10);
-    glmDraw(objeto, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
-    glPopMatrix();
-
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glmDraw(objeto, GLM_SMOOTH | GLM_COLOR | GLM_TEXTURE);
 }
+
 
 void desenhaPlano(){
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -141,11 +136,63 @@ void desenhaCena(){
         gluLookAt(cam.x, cam.y, cam.z, focoCamera.x, focoCamera.y, focoCamera.z, 0, 1, 0);
         glLightfv(GL_LIGHT0, GL_POSITION, sol.posicao);
 
-        //if(luz) glEnable(GL_LIGHTING);
+        if(luz) glEnable(GL_LIGHTING);
         
         desenhaPlano();
+        
+        //XICARA
+        glPushMatrix();
+        	trasla.x = 500;
+        	trasla.y = 100;
+        	trasla.z = 0;
 
-       	if(luz) glDisable(GL_LIGHTING);
+        	escala.x = 100;
+        	escala.y = 100;
+        	escala.z = 100;
+
+            if (!xicara){
+			    xicara = glmReadOBJ("objetos/untitled.obj");
+			    if (!xicara) exit(0);
+			    glmUnitize(xicara);
+			    glmFacetNormals(xicara);
+			    glmVertexNormals(xicara, 90.0f, GL_TRUE);
+		    }
+        	criaObjeto(xicara,trasla,escala);
+        glPopMatrix();
+
+        //ELEVADOR
+        glPushMatrix();
+        	trasla.x = -500;
+        	trasla.y = 100;
+        	trasla.z = 0;
+
+            if (!elevador){
+			    elevador = glmReadOBJ("objetos/DropTower.obj");
+			    if (!elevador) exit(0);
+			    glmUnitize(elevador);
+			    glmFacetNormals(elevador);
+			    glmVertexNormals(elevador, 90.0f, GL_TRUE);
+		    }
+        	criaObjeto(elevador,trasla,escala);
+        glPopMatrix();
+
+        //CARROSSEL
+        glPushMatrix();
+        	trasla.x = 0;
+        	trasla.y = 100;
+        	trasla.z = 500;
+
+            if (!carrossel){
+			    carrossel = glmReadOBJ("objetos/SwingRide.obj");
+			    if (!carrossel) exit(0);
+			    glmUnitize(carrossel);
+			    glmFacetNormals(carrossel);
+			    glmVertexNormals(carrossel, 90.0f, GL_TRUE);
+		    }
+        	criaObjeto(carrossel,trasla,escala);
+        glPopMatrix();
+
+     if(luz) glDisable(GL_LIGHTING);
     	
     glPopMatrix();
 
@@ -167,10 +214,6 @@ void configLuz(){
     glLightfv(GL_LIGHT0, GL_DIFFUSE, sol.difusa);
     glLightfv(GL_LIGHT0, GL_SPECULAR, sol.especular);
     
-    glLightfv(GL_LIGHT1, GL_AMBIENT, lampada.ambiente);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lampada.difusa);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lampada.especular);
-    glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.05f);
 
     glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 
@@ -211,6 +254,9 @@ void teclado(unsigned char key, int x, int y){
             camAux.z += 2*cos(anguloTranslacao);
             atualizaCam();
             break;
+        case 'l':
+        case 'L':
+        	luz = !luz; break;
     }
 }
 
@@ -240,17 +286,19 @@ void inicializa(){
     chao.ambiente[3] = chao.difusa[3] = chao.especular[3] = chao.emissiva[3] = 1;
     chao.brilho[0] = 0;
 
-    poste_M = glmReadOBJ("obejotas/arvorezinha/lowpolytree.obj");
-    if (!poste_M) 
-        exit(0);
-    PONTO ptPoste;
-    printf("camera x: %f\n",cam.x);
-    printf("camera y: %f\n",cam.y);
-    printf("camera z: %f\n",cam.z);
-    ptPoste.x = 10;
-    ptPoste.y = 100;
-    ptPoste.z = 8;
-    criaObjeto(poste_M, ptPoste);
+	//MADEIRA
+    for(i = 0; i < 3; i++){
+    	madeira.ambiente[i] = 1;
+    	madeira.difusa[i] = 1;
+    	madeira.especular[i] = 1;
+    	madeira.emissiva[i] = 1;	
+    } 
+    madeira.ambiente[1] = 1;
+    madeira.difusa[1] = 1;
+    madeira.especular[1] = 1;
+    madeira.ambiente[3] = madeira.difusa[3] = madeira.especular[3] = madeira.emissiva[3] = 1;
+    madeira.brilho[0] = 1;
+
 
     texturaPiso = SOIL_load_OGL_texture("images/chao.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
     if (!texturaPiso)

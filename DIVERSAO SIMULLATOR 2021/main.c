@@ -4,10 +4,9 @@
 
 #define TRUE 1
 #define FALSE 0
-#define N_ARVORES 200
-#define N_NUVENS 100
+#define AumentoAngulo 1
 
-GLMmodel *poste_M = NULL, *xicara = NULL, *elevador = NULL, *carrossel = NULL;
+GLMmodel *poste_M = NULL, *xicara = NULL, *elevador = NULL, *carrossel = NULL, *base = NULL, *aro = NULL, *cadeiras = NULL;
 
 int i = 0, j = 0;
 
@@ -29,7 +28,7 @@ typedef struct{
     GLfloat brilho[1];
 }LUZ, COR, MATERIAL;
 
-int vira = 0, camType = 1, luz = 1, dia = 0; //flags "booleanas"
+int vira = 0, camType = 1, luz = 0, dia = 0; //flags "booleanas"
 
 
 PONTO cam, focoCamera, camAux, escala, trasla;
@@ -39,6 +38,8 @@ LUZ sol, lampada;
 MATERIAL chao, madeira;
 
 //Mix_Music *jazzgostosinho;
+
+float anguloRoda = 0;
 
 GLuint texturaPiso;
 
@@ -129,6 +130,34 @@ void desenhaPlano(){
     glDisable(GL_TEXTURE_2D);
 }
 
+void desenhaRoda(PONTO ptTransled, PONTO ptScaled){
+    
+    glPushMatrix();
+    glTranslatef(ptTransled.x, ptTransled.y, ptTransled.z);
+    glScaled(ptScaled.x, ptScaled.y, ptScaled.z);
+    glmDraw(base, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+        glPushMatrix();
+        glTranslatef(ptTransled.x, ptTransled.y-0.2,ptTransled.z);
+        glRotatef(anguloRoda,0,0,1);
+        glmDraw(aro, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+        glRotatef(-anguloRoda,0,0,1);
+        printf("%f\n",anguloRoda);
+            int t;
+            for(t=0;t<8;t++)
+            {
+                glPushMatrix();
+                //glScaled(ptScaled.x*0.33, ptScaled.y*0.33, ptScaled.z*0.33);
+                glScalef(0.3,0.3,0.25);
+                glTranslatef(-2.5*sin(anguloRoda*M_PI/180+t*M_PI/4),+2.5*cos(anguloRoda*M_PI/180+t*M_PI/4),0);
+                glmDraw(cadeiras, GLM_SMOOTH | GLM_TEXTURE | GLM_COLOR);
+                glPopMatrix();
+            }
+        glPopMatrix();
+    glPopMatrix();
+}
+
+
+
 void desenhaCena(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -140,6 +169,27 @@ void desenhaCena(){
         
         desenhaPlano();
         
+        //ELEVADOR
+        glPushMatrix();
+        	trasla.x = -500;
+        	trasla.y = 500;
+        	trasla.z = 0;
+
+            escala.x = 500;
+        	escala.y = 500;
+        	escala.z = 500;
+
+
+            if (!elevador){
+			    elevador = glmReadOBJ("objetos/elevador.obj");
+			    if (!elevador) exit(0);
+			    glmUnitize(elevador);
+			    glmFacetNormals(elevador);
+			    glmVertexNormals(elevador, 90.0f, GL_TRUE);
+		    }
+        	criaObjeto(elevador,trasla,escala);
+        glPopMatrix();
+
         //XICARA
         glPushMatrix();
         	trasla.x = 500;
@@ -160,37 +210,60 @@ void desenhaCena(){
         	criaObjeto(xicara,trasla,escala);
         glPopMatrix();
 
-        //ELEVADOR
-        glPushMatrix();
-        	trasla.x = -500;
-        	trasla.y = 100;
-        	trasla.z = 0;
 
-            if (!elevador){
-			    elevador = glmReadOBJ("objetos/DropTower.obj");
-			    if (!elevador) exit(0);
-			    glmUnitize(elevador);
-			    glmFacetNormals(elevador);
-			    glmVertexNormals(elevador, 90.0f, GL_TRUE);
-		    }
-        	criaObjeto(elevador,trasla,escala);
-        glPopMatrix();
-
-        //CARROSSEL
+        /*/CARROSSEL
         glPushMatrix();
         	trasla.x = 0;
         	trasla.y = 100;
         	trasla.z = 500;
 
             if (!carrossel){
-			    carrossel = glmReadOBJ("objetos/SwingRide.obj");
+			    carrossel = glmReadOBJ("objetos/carrossel.obj");
 			    if (!carrossel) exit(0);
 			    glmUnitize(carrossel);
 			    glmFacetNormals(carrossel);
 			    glmVertexNormals(carrossel, 90.0f, GL_TRUE);
 		    }
         	criaObjeto(carrossel,trasla,escala);
-        glPopMatrix();
+        glPopMatrix();*/
+
+    	//RODA
+        	trasla.x = 0;
+        	trasla.y = 0.9;
+        	trasla.z = 0;
+
+        	escala.x = 300;
+        	escala.y = 300;
+        	escala.z = 300;
+
+            if(!base){
+	            base = glmReadOBJ("objetos/base.obj");
+	            if(!base)
+	                exit(0);
+	            glmUnitize(base);
+	            glmFacetNormals(base);
+	            glmVertexNormals(base, 90.0f, GL_TRUE);
+	        }
+
+            if(!aro){
+	            aro = glmReadOBJ("objetos/aro.obj");
+	            if(!aro)
+	                exit(0);
+	            glmUnitize(aro);
+	            glmFacetNormals(aro);
+	            glmVertexNormals(aro, 90.0f, GL_TRUE);
+	        }
+
+            if(!cadeiras){
+	            cadeiras = glmReadOBJ("objetos/cadeiras.obj");
+	            if(!cadeiras)
+	                exit(0);
+	            glmUnitize(cadeiras);
+	            glmFacetNormals(cadeiras);
+	            glmVertexNormals(cadeiras, 90.0f, GL_TRUE);
+	        }
+
+        	desenhaRoda(trasla,escala);
 
      if(luz) glDisable(GL_LIGHTING);
     	
@@ -225,6 +298,10 @@ void configLuz(){
 
 void atualiza(int periodo){
     configLuz();
+    anguloRoda += AumentoAngulo;
+    if(anguloRoda>360)
+        anguloRoda-=360;
+
 	glutTimerFunc(25, atualiza, 0);	
 	glutPostRedisplay();
 }
@@ -267,11 +344,11 @@ void inicializa(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     cam.x = 0;
-    cam.y = 108; //altura camera
+    cam.y = 250; //altura camera
     cam.z = 10;
     camAux.x = cam.x;
-    camAux.y = 100;
-    camAux.z = 0;
+    camAux.y = 250;
+    camAux.z = 140;
 
     //CHAO
     for(i = 0; i < 3; i++){

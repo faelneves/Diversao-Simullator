@@ -6,9 +6,8 @@
 #define FALSE 0
 #define AumentoAngulo 1
 
-GLMmodel *poste = NULL, *elevador = NULL, *arvore = NULL, *base = NULL, *aro = NULL, *cadeiras = NULL;
+GLMmodel *poste = NULL, *elevador = NULL, *arvore = NULL, *base = NULL, *aro = NULL, *cadeiras = NULL, *rodaroda = NULL;
 
-int i = 0, j = 0;
 
 typedef struct{
     GLdouble x, y, z;
@@ -22,9 +21,9 @@ typedef struct{
 	GLfloat posicao[4];
     GLfloat emissiva[4];
     GLfloat brilho[1];
-}LUZ, COR, MATERIAL;
+}LUZ, MATERIAL;
 
-int vira = 0, camType = 1, luz = 0, dia = 0; //flags "booleanas"
+int camType = 1, luz = 0, dia = 0;
 
 
 PONTO cam, focoCamera, camAux, escala, trasla;
@@ -36,8 +35,6 @@ MATERIAL chao;
 float anguloRoda = 0;
 
 GLuint texturaPiso;
-
-GLfloat ambiente = 0.2;
 
 double anguloRotacao = 360, anguloTranslacao = 2*M_PI, anguloCam3 = 2*M_PI;
 
@@ -246,6 +243,37 @@ void desenhaCena(){
     		glPopMatrix();
         }
 
+        //RODA-RODA
+        glPushMatrix();
+        	trasla.x = 500;
+        	trasla.y = 55;
+        	trasla.z = -500;
+
+            escala.x = 100;
+        	escala.y = 100;
+        	escala.z = 100;
+
+
+            if (!rodaroda){
+			    rodaroda = glmReadOBJ("objetos/rodaroda.obj");
+			    if (!rodaroda) exit(0);
+			    glmUnitize(rodaroda);
+			    glmFacetNormals(rodaroda);
+			    glmVertexNormals(rodaroda, 90.0f, GL_TRUE);
+		    }
+        	criaObjeto(rodaroda,trasla,escala);
+        glPopMatrix();
+
+        glPushMatrix();
+        	trasla.z = 500;	
+        	criaObjeto(rodaroda,trasla,escala);
+        	glPopMatrix();
+
+        glPushMatrix();
+        	trasla.z = 0;	
+        	criaObjeto(rodaroda,trasla,escala);
+        	glPopMatrix();
+
     	//RODA
         	trasla.x = 0;
         	trasla.y = 1.2;
@@ -292,13 +320,11 @@ void desenhaCena(){
 }
 
 void configLuz(){
-	if(ambiente <= -0.3) dia = 1;
-    if(ambiente >= 0.5) dia = 0;
-    if(dia) ambiente += 0.0005;
-    else ambiente -= 0.0005;
-    for(i = 0; i < 3; i++) sol.ambiente[i] = ambiente;
-    for(i = 0; i < 3; i++) sol.difusa[i] = 0.7;
-    for(i = 0; i < 3; i++) sol.especular[i] = 1;
+    for(int i = 0; i < 3; i++){
+    	sol.ambiente[i] = 0.2;
+    	sol.difusa[i] = 0.7;
+    	sol.especular[i] = 1;	
+    } 
     sol.ambiente[3] = sol.difusa[3] = sol.especular[3] = 1;
     sol.posicao[0] = 0; sol.posicao[1] = 1; sol.posicao[2] = 0; sol.posicao[3] = 0;
 
@@ -389,6 +415,15 @@ void teclado(unsigned char key, int x, int y){
 		    focoCamera.y = 35;
 		    focoCamera.z = -370;
         	break;
+       	case '4':
+       		camType = 2;
+            cam.x = 715;
+        	cam.y = 100;
+        	cam.z = 775;
+		    focoCamera.x = 700;
+		    focoCamera.y = 100;
+		    focoCamera.z = 750;
+       		break;
     }
 }
 
@@ -406,7 +441,7 @@ void inicializa(){
     camAux.z = 140;
 
     //CHAO
-    for(i = 0; i < 3; i++){
+    for(int i = 0; i < 3; i++){
     	chao.ambiente[i] = 0;
     	chao.difusa[i] = .5;
     	chao.especular[i] = .0;
